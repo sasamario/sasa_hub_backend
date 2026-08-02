@@ -71,3 +71,39 @@ npm install
 5. 上記で問題が無いと判断できれば、誤検知として**ウイルス対策ソフト側で除外設定**する
    (最終判断はセキュリティポリシーに従う)。
 6. 少しでも不審な点があれば安易に除外せず、パッケージを使うライブラリ自体の見直しを検討する。
+
+## 4. Docker開発環境の構築
+
+フロントエンド(`sasa_hub_frontend`)の `Dockerfile` / `compose.yml` と同じ流儀に揃えた。
+`docker compose` の変数展開の仕組みは `docs/guides/docker/compose-env.md` を参照。
+
+### 用意したファイル
+
+- `Dockerfile`: `node:22` ベース(フロントと統一)。`WORKDIR /app` のみのシンプルな内容。
+  依存インストールやコマンド実行は `compose.yml` 側で行う(ローカル開発用途のため)。
+- `compose.yml`: 3サービス構成。
+  - `app`: NestJS本体。ホスト側の公開ポートは **3001**(フロントのNuxtが3000を使っているため、
+    同時起動時の衝突を避けるためにずらした)。`command: npm run start:dev` でホットリロード起動。
+  - `db`: `postgres:16`。データは名前付きボリューム `db_data` に永続化。
+  - `pgadmin`: `dpage/pgadmin4`。DBを操作するGUIクライアントとして追加。ホスト側ポートは5050。
+- `.env.example`: 必要な環境変数の雛形をリポジトリに含める。実際の値を入れた `.env` は
+  `.gitignore` 済みのためコミットしない(オーナー側で用意)。
+
+### 環境変数の設計
+
+| 変数名                                            | 用途                                                    |
+| --------------------------------------------------- | --------------------------------------------------------- |
+| `PORT`                                              | NestJSアプリの待受ポート(`main.ts` が `process.env.PORT` を参照) |
+| `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB` | `db` サービス(PostgreSQL)の認証情報                     |
+| `DATABASE_URL`                                      | Prismaが参照する接続文字列。ホスト名はcompose上のサービス名 `db` を指定 |
+| `PGADMIN_DEFAULT_EMAIL` / `PGADMIN_DEFAULT_PASSWORD`  | pgAdminのログイン情報                                    |
+
+### 起動確認
+
+```
+docker compose up
+```
+
+- `app`: http://localhost:3001 で応答すればOK
+- `pgadmin`: http://localhost:5050 にアクセスし、`.env` に設定したメール/パスワードでログインできればOK
+  (DBサーバー自体をpgAdmin上に登録する作業は別途必要。ホスト名は `db`、ポートは `5432`)
