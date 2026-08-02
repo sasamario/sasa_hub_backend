@@ -107,3 +107,45 @@ docker compose up
 - `app`: http://localhost:3001 で応答すればOK
 - `pgadmin`: http://localhost:5050 にアクセスし、`.env` に設定したメール/パスワードでログインできればOK
   (DBサーバー自体をpgAdmin上に登録する作業は別途必要。ホスト名は `db`、ポートは `5432`)
+
+## 5. Prismaの導入
+
+Prisma CLI・関連パッケージの汎用知識は `docs/guides/prisma/cli.md` を参照。
+ここでは本プロジェクトで実際に行った手順のみ記録する。
+
+### 5.1 パッケージのインストール
+
+Prisma 7時点の公式ドキュメント(自前ホストPostgreSQL向けQuickstart)に沿って、
+開発依存・本番依存をまとめてインストールする。各パッケージの役割は `docs/guides/prisma/cli.md` を参照。
+
+```bash
+docker compose exec app npm install -D prisma @types/pg
+docker compose exec app npm install @prisma/client pg @prisma/adapter-pg dotenv
+```
+
+Prisma CLIの操作は、ローカルPC(Node v20.16.0)ではなく **appコンテナ内(node:22)** で行う方針とした。
+理由: `DATABASE_URL` のホスト名を `db`(compose上のサービス名)のまま使い回せるため。
+ホスト側で直接実行する場合は `localhost` 向けの別の接続文字列が必要になり、管理が煩雑になる。
+
+**注記(判断の訂正)**: 当初「`pg` や `@prisma/adapter-pg` はサーバーレス向けの発展的機能で
+不要」と判断していたが、これは誤りだった。Prisma 7では自前ホストのPostgreSQLでも
+**Driver Adapter方式が標準の案内**になっている。詳細は `docs/guides/prisma/cli.md` を参照。
+
+### 5.2 スキーマファイルの初期化
+
+```bash
+docker compose exec app npx prisma init --datasource-provider postgresql
+```
+
+`prisma/schema.prisma`(スキーマ定義)・`prisma.config.ts`(CLI設定)が生成される。
+`.env` は既存のものをそのまま使うため上書きされない。
+
+### 5.3 AIエージェント向けスキルファイルの副産物(要注意)
+
+`prisma init` 実行時に、Prisma公式が提供する「AIコーディングアシスタント向け参考資料」が
+自動でダウンロード・配置される(Prisma CLIの新機能)。詳細・対処は
+`docs/guides/prisma/cli.md` の「AIエージェント向けスキル機能」を参照。
+
+- 使っているツール(Claude Code)向けの `.claude/skills/` と、対応する `skills-lock.json` は残した。
+- 使っていないツール向けの `.windsurf/` `.agents/` は削除した
+  (`prisma`関連コマンド実行時に復活する可能性はあるが、実害はないため都度対応する方針)。
