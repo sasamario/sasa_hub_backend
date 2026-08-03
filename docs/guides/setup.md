@@ -149,3 +149,30 @@ docker compose exec app npx prisma init --datasource-provider postgresql
 - 使っているツール(Claude Code)向けの `.claude/skills/` と、対応する `skills-lock.json` は残した。
 - 使っていないツール向けの `.windsurf/` `.agents/` は削除した
   (`prisma`関連コマンド実行時に復活する可能性はあるが、実害はないため都度対応する方針)。
+
+## 6. Lint / Formatterの調整
+
+Nest CLI雛形で生成された `eslint.config.mjs` / `.prettierrc` をベースに、以下を調整した。
+ESLint・Prettier自体の汎用知識は `docs/guides/eslint/overview.md` /
+`docs/guides/prettier/overview.md` を参照。
+
+### 6.1 ESLintルールの変更
+
+`@typescript-eslint/no-floating-promises` を `warn` から `error` に引き上げた。
+本プロジェクトは外部API(GitHub/Qiita)呼び出しを伴う同期処理が中心であり、
+`await` し忘れがあるとエラーが握りつぶされ原因追跡が難しくなるため。
+
+`@typescript-eslint/no-explicit-any` は `off` のままとした。開発初期は外部APIレスポンスの
+型付けなどで `any` が現実的に必要な場面が多く、学習の妨げにならないよう据え置いた。
+
+各ルールの意図は `eslint.config.mjs` 内にコメントとして残している。
+
+### 6.2 Prettier設定をJSON形式からJS形式に変更
+
+`.prettierrc`(JSON)はコメントを書けないため、`prettier.config.mjs`(JavaScript)に置き換えた。
+`eslint.config.mjs` と同様にJSDocの型注釈(`/** @type {import("prettier").Config} */`)を付け、
+エディタ上で補完・型チェックが効くようにしている。
+
+学習のため、Prettierのデフォルト値の項目もあえて明示的に書き、コメントで
+「デフォルト値である」ことと「意図的な上書きである」ことを区別している
+(例: `singleQuote: true` は上書き、`trailingComma: 'all'` はPrettier 3系のデフォルトそのもの)。
