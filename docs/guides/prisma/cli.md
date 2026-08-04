@@ -45,6 +45,15 @@ prisma migrate dev --name <変更内容を表す名前>
 
 ブラウザ上でDBの中身をGUIで確認・編集できるツールを起動する。
 
+### `prisma format`
+
+`schema.prisma` 内の型・属性などの列を自動で位置揃えする。フィールドを追加・削除して
+幅が変わっても、手動で揃え直す必要がなくなる。スキーマを編集したら都度実行するとよい。
+
+```
+prisma format
+```
+
 参考: [CLI Reference](https://www.prisma.io/docs/orm/reference/prisma-cli-reference)
 
 ## Driver Adapter方式(Prisma 7の標準構成)
