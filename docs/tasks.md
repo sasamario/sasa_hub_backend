@@ -8,12 +8,12 @@
 
 ## フェーズ1: 環境構築
 
-- [ ] NestJS プロジェクトの初期化
-- [ ] Docker で開発環境を起動できるようにする(Dockerfile / compose、PostgreSQLコンテナ含む)
-- [ ] Prisma の導入(接続設定・初期セットアップ)
-- [ ] Lint / Formatter の設定(コーディング規約)
-- [ ] .env 設計(DB接続情報・GitHub/Qiita APIトークン・対象リポジトリ一覧など)
-- [ ] 初回セットアップ手順を `docs/guides/setup.md` に記録する
+- [x] NestJS プロジェクトの初期化
+- [x] Docker で開発環境を起動できるようにする(Dockerfile / compose、PostgreSQLコンテナ含む)
+- [x] Prisma の導入(接続設定・初期セットアップ)
+- [x] Lint / Formatter の設定(コーディング規約)
+- [x] .env 設計(DB接続情報・GitHub/Qiita APIトークン・対象リポジトリ一覧など)
+- [x] 初回セットアップ手順を `docs/guides/setup.md` に記録する
 
 ## フェーズ2: データモデル実装
 
