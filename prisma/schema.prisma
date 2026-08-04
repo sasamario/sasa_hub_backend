@@ -11,3 +11,33 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+enum GithubType {
+  commit
+  pull_request
+
+  @@map("github_type")
+}
+
+model GithubActivity {
+  // ID
+  id           Int        @id @default(autoincrement())
+  // 種別
+  type         GithubType
+  // コミットSHA、PR番号
+  externalId   String @map("external_id")
+  // リポジトリ名
+  repository   String
+  // コミットメッセージ、PRタイトル
+  title        String
+  // コミットURL、PRURL
+  url          String
+  // コミット日時、PR作成日時
+  activityDate DateTime? @map("activity_date")
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+
+  // type, repository, externalIdによる複合ユニークキー
+  @@unique([type, repository, externalId])
+  @@map("github_activities")
+}
