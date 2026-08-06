@@ -25,7 +25,7 @@ model GithubActivity {
   // 種別
   type         GithubType
   // コミットSHA、PR番号
-  externalId   String @map("external_id")
+  externalId   String     @map("external_id")
   // リポジトリ名
   repository   String
   // コミットメッセージ、PRタイトル
@@ -33,11 +33,36 @@ model GithubActivity {
   // コミットURL、PRURL
   url          String
   // コミット日時、PR作成日時
-  activityDate DateTime? @map("activity_date")
+  activityDate DateTime?  @map("activity_date")
   createdAt    DateTime   @default(now()) @map("created_at")
   updatedAt    DateTime   @updatedAt @map("updated_at")
 
   // type, repository, externalIdによる複合ユニークキー
   @@unique([type, repository, externalId])
   @@map("github_activities")
+}
+
+model QiitaArticle {
+  // ID
+  id             Int      @id @default(autoincrement())
+  // 記事ID
+  externalId     String   @unique @map("external_id")
+  // 記事タイトル
+  title          String
+  // 記事URL
+  url            String
+  // 記事投稿日
+  activityDate   DateTime @map("activity_date")
+  // 記事のいいね数
+  likesCount     Int      @map("likes_count")
+  // 記事のストック数
+  stocksCount    Int      @map("stocks_count")
+  // 記事の閲覧数
+  pageViewsCount Int?     @map("page_views_count")
+  // 同期日時
+  syncedAt       DateTime @default(now()) @map("synced_at")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@map("qiita_articles")
 }
