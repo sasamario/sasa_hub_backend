@@ -19,12 +19,12 @@
 
 architecture.md 4章の確定分をPrismaスキーマに落とし込む。
 
-- [ ] `github_activities` テーブル(type/external_id/repository/title/url/activity_date、
+- [x] `github_activities` テーブル(type/external_id/repository/title/url/activity_date、
       一意制約 `(type, repository, external_id)`)
-- [ ] `qiita_articles` テーブル(external_id一意・likes_count/stocks_count/page_views_count・synced_at)
-- [ ] `sync_logs` テーブル(source/repository/status/started_at/finished_at/message)
-- [ ] マイグレーション作成・適用
-- [ ] テーブル追加の手順を `docs/guides/add-table.md` に記録する
+- [x] `qiita_articles` テーブル(external_id一意・likes_count/stocks_count/page_views_count・synced_at)
+- [x] `sync_logs` テーブル(source/repository/status/started_at/finished_at/message)
+- [x] マイグレーション作成・適用
+- [x] テーブル追加の手順を `docs/guides/prisma/add-table.md` に記録する
 
 ## フェーズ3: 同期処理実装
 
