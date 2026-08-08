@@ -66,3 +66,37 @@ model QiitaArticle {
 
   @@map("qiita_articles")
 }
+
+enum SyncSource {
+  github
+  qiita
+
+  @@map("sync_source")
+}
+
+enum SyncStatus {
+  success
+  failed
+
+  @@map("sync_status")
+}
+
+model SyncLog {
+  // ID
+  id         Int        @id @default(autoincrement())
+  // 同期元
+  source     SyncSource
+  // 同期対象リポジトリ名
+  repository String?
+  // 同期の成否
+  status     SyncStatus
+  // 同期開始日時（差分取得の起点に使用）
+  startedAt  DateTime   @default(now()) @map("started_at")
+  // 同期完了日時
+  finishedAt DateTime?  @map("finished_at")
+  // 同期エラー時のメッセージ
+  message    String?
+  createdAt  DateTime   @default(now()) @map("created_at")
+
+  @@map("sync_logs")
+}
