@@ -11,3 +11,92 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+enum GithubType {
+  commit
+  pull_request
+
+  @@map("github_type")
+}
+
+model GithubActivity {
+  // ID
+  id           Int        @id @default(autoincrement())
+  // 種別
+  type         GithubType
+  // コミットSHA、PR番号
+  externalId   String     @map("external_id")
+  // リポジトリ名
+  repository   String
+  // コミットメッセージ、PRタイトル
+  title        String
+  // コミットURL、PRURL
+  url          String
+  // コミット日時、PR作成日時
+  activityDate DateTime?  @map("activity_date")
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+
+  // type, repository, externalIdによる複合ユニークキー
+  @@unique([type, repository, externalId])
+  @@map("github_activities")
+}
+
+model QiitaArticle {
+  // ID
+  id             Int      @id @default(autoincrement())
+  // 記事ID
+  externalId     String   @unique @map("external_id")
+  // 記事タイトル
+  title          String
+  // 記事URL
+  url            String
+  // 記事投稿日
+  activityDate   DateTime @map("activity_date")
+  // 記事のいいね数
+  likesCount     Int      @map("likes_count")
+  // 記事のストック数
+  stocksCount    Int      @map("stocks_count")
+  // 記事の閲覧数
+  pageViewsCount Int?     @map("page_views_count")
+  // 同期日時
+  syncedAt       DateTime @default(now()) @map("synced_at")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@map("qiita_articles")
+}
+
+enum SyncSource {
+  github
+  qiita
+
+  @@map("sync_source")
+}
+
+enum SyncStatus {
+  success
+  failed
+
+  @@map("sync_status")
+}
+
+model SyncLog {
+  // ID
+  id         Int        @id @default(autoincrement())
+  // 同期元
+  source     SyncSource
+  // 同期対象リポジトリ名
+  repository String?
+  // 同期の成否
+  status     SyncStatus
+  // 同期開始日時（差分取得の起点に使用）
+  startedAt  DateTime   @default(now()) @map("started_at")
+  // 同期完了日時
+  finishedAt DateTime?  @map("finished_at")
+  // 同期エラー時のメッセージ
+  message    String?
+  createdAt  DateTime   @default(now()) @map("created_at")
+
+  @@map("sync_logs")
+}

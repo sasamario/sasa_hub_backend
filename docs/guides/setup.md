@@ -106,7 +106,29 @@ docker compose up
 
 - `app`: http://localhost:3001 で応答すればOK
 - `pgadmin`: http://localhost:5050 にアクセスし、`.env` に設定したメール/パスワードでログインできればOK
-  (DBサーバー自体をpgAdmin上に登録する作業は別途必要。ホスト名は `db`、ポートは `5432`)
+
+### pgAdminへのDBサーバー登録
+
+pgAdminにログインしただけでは中身は空で、**PostgreSQLサーバーを別途登録する操作が必要**。
+ログイン後、左側のツリーで「Servers」を右クリック → 「Register」→「Server...」から登録する。
+
+| 項目(タブ) | 設定値 |
+| ------------ | -------------------------------- |
+| General > Name | 任意の表示名(例: `sasa_hub_backend`) |
+| Connection > Host name/address | `db` |
+| Connection > Port | `5432` |
+| Connection > Maintenance database | `.env` の `POSTGRES_DB` |
+| Connection > Username | `.env` の `POSTGRES_USER` |
+| Connection > Password | `.env` の `POSTGRES_PASSWORD` |
+
+**注意: Host name/addressは`localhost`ではなく`db`にする。** pgAdmin自身も`compose.yml`上の
+別コンテナとして動いているため、pgAdminから見た`localhost`は**pgAdminコンテナ自身**を指してしまう
+(PostgreSQLが動いている`db`コンテナのことではない)。Docker Composeは同じ`compose.yml`内の
+サービス同士をサービス名でホスト名解決できる内部ネットワークを自動的に作るため、`db`を指定する。
+
+登録後、`Servers > (登録名) > Databases > (DB名) > Schemas > public > Tables` でテーブル一覧が
+確認できる。マイグレーション適用直後に反映されない場合は、`Tables` を右クリック→Refreshする
+(pgAdminは自動更新されないため)。
 
 ## 5. Prismaの導入
 

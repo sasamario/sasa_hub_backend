@@ -36,6 +36,21 @@ prisma init [オプション]
 prisma migrate dev --name <変更内容を表す名前>
 ```
 
+このコマンド1回で「マイグレーションファイルの生成」「開発用DBへの適用」「`prisma generate`の実行」まで
+まとめて行われる。
+
+### `prisma migrate deploy`(本番・CI向け)
+
+`migrate dev`とは別に、**適用のみ**を行うコマンドもある。新規マイグレーションの生成は行わず、
+リポジトリに既に存在するマイグレーションファイルをそのままDBに適用する。
+
+```
+prisma migrate deploy
+```
+
+本番環境やCI環境など、「開発中に生成したマイグレーションを、確定した内容のまま別環境に反映する」
+用途で使う。
+
 ### `prisma generate`
 
 `schema.prisma` の内容をもとに、TypeScriptの型付きクライアント(`@prisma/client`)を生成する。
@@ -44,6 +59,15 @@ prisma migrate dev --name <変更内容を表す名前>
 ### `prisma studio`
 
 ブラウザ上でDBの中身をGUIで確認・編集できるツールを起動する。
+
+### `prisma format`
+
+`schema.prisma` 内の型・属性などの列を自動で位置揃えする。フィールドを追加・削除して
+幅が変わっても、手動で揃え直す必要がなくなる。スキーマを編集したら都度実行するとよい。
+
+```
+prisma format
+```
 
 参考: [CLI Reference](https://www.prisma.io/docs/orm/reference/prisma-cli-reference)
 
