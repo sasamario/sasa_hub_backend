@@ -13,7 +13,7 @@ NestJS プロジェクトの作成・雛形生成を行う公式CLIツールの�
 
 新規プロジェクトの雛形一式(TypeScript設定・ESLint/Prettier・テスト環境込み)を生成する。
 
-```
+```bash
 nest new <プロジェクト名>
 ```
 
@@ -35,7 +35,7 @@ nest new <プロジェクト名>
 
 モジュール・コントローラー・サービスなどの雛形を追加生成する。
 
-```
+```bash
 nest g module users     # モジュールを生成
 nest g controller users # コントローラーを生成
 nest g service users    # サービスを生成
@@ -49,7 +49,7 @@ nest g resource users   # モジュール+コントローラー+サービス+DTO
 
 ### `nest build` / `nest start`
 
-```
+```bash
 nest build          # TypeScriptをコンパイルし dist/ に出力
 nest start          # アプリを起動(コンパイル済みを実行)
 nest start --watch  # ファイル変更を検知して自動再起動(開発時に使用)
@@ -57,7 +57,7 @@ nest start --watch  # ファイル変更を検知して自動再起動(開発時
 
 ## `nest new` で生成される標準ファイル構成
 
-```
+```text
 src/
   app.controller.ts       # サンプルのコントローラー(GET / を処理)
   app.controller.spec.ts  # コントローラーのユニットテスト
