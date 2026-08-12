@@ -61,3 +61,32 @@ const response = await fetch(url);
 固定の1パラメータだけなど単純な場合は`` `${url}?state=all` ``のような文字列結合でも動作するが、
 値に特殊文字が混ざる可能性がある場合や、パラメータが複数になる場合は`URLSearchParams`の方が
 安全で読みやすい。
+
+参考: [MDN - URLSearchParams](https://developer.mozilla.org/ja/docs/Web/API/URLSearchParams)
+
+### 主なメソッド
+
+コンストラクタにオブジェクトを渡す以外に、生成後にパラメータを操作するメソッドも用意されている。
+「値が渡された時だけパラメータを追加したい」ような、条件付きの組み立てで使う。
+
+```typescript
+const params = new URLSearchParams(); // 空の状態で作る
+
+params.set('state', 'all'); // key=valueを設定する(同じkeyが既にあれば上書き)
+if (since) {
+  params.set('since', since.toISOString()); // 条件付きで追加する場合はifで囲む
+}
+
+const url = `${GITHUB_API_BASE_URL}/repos/${owner}/${repo}/commits?${params}`;
+```
+
+| メソッド | 意味 |
+|---|---|
+| `set(key, value)` | `key`に`value`を設定する。同じ`key`が既にあれば**上書き**する |
+| `append(key, value)` | `key`に`value`を**追加**する。同じ`key`が既にあっても上書きせず、複数値を持たせられる(例: `?tag=a&tag=b`) |
+| `get(key)` | `key`に対応する値を1つ取得する(無ければ`null`) |
+| `has(key)` | `key`が存在するか(`boolean`) |
+| `delete(key)` | `key`を削除する |
+
+`set`と`append`の違いは「上書きするか、追加するか」。同じキーを複数回指定したい場面
+(例: `?repo=a&repo=b`のような複数選択)以外は、基本的に`set`を使えばよい。
