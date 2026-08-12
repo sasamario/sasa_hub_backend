@@ -11,18 +11,35 @@ export class GithubApiService {
     repo: string,
     since: Date | null,
   ): Promise<GithubCommit[]> {
-    const params = new URLSearchParams();
-    if (since) {
-      params.set('since', since.toISOString());
-    }
-    const url = `${GITHUB_API_BASE_URL}/repos/${owner}/${repo}/commits?${params}`;
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`Failed to fetch commits: ${response.statusText}`);
-    }
-    const commits: GithubCommit[] = await response.json();
+    let page = 1;
+    const perPage = 100;
+    const allCommits: GithubCommit[] = [];
 
-    return commits;
+    while (true) {
+      const params = new URLSearchParams({
+        per_page: perPage.toString(),
+        page: page.toString(),
+      });
+      if (since) {
+        params.set('since', since.toISOString());
+      }
+      const url = `${GITHUB_API_BASE_URL}/repos/${owner}/${repo}/commits?${params}`;
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch commits: ${response.statusText}`);
+      }
+      const commits: GithubCommit[] = await response.json();
+      // ...commitsとすることで、commits配列の各要素を1つずつ、allCommitsに追加している
+      allCommits.push(...commits);
+
+      if (commits.length < perPage) {
+        // 取得するデータがこれ以上ないので、ループを抜ける
+        break;
+      }
+      page++;
+    }
+
+    return allCommits;
   }
 
   // GitHub API(List pull requests)を呼び出して、指定されたリポジトリのプルリクエスト情報を取得する
