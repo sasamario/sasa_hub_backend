@@ -86,7 +86,15 @@ export class GithubSyncService {
   ): Promise<{ commitsCount: number; pullRequestsCount: number }> {
     const startDate = new Date();
     try {
-      const commits = await this.githubApiService.fetchCommits(owner, repo);
+      const lastSuccessSyncedAt = await this.getLastSuccessSyncedAt(
+        owner,
+        repo,
+      );
+      const commits = await this.githubApiService.fetchCommits(
+        owner,
+        repo,
+        lastSuccessSyncedAt,
+      );
       const pullRequests = await this.githubApiService.fetchPullRequests(
         owner,
         repo,
@@ -144,6 +152,7 @@ export class GithubSyncService {
     }
   }
 
+  // 対象リポジトリ全てを同期する処理
   async syncAllRepositories(): Promise<void> {
     const repositories = this.parseTrackedRepositories();
 
@@ -154,5 +163,24 @@ export class GithubSyncService {
         // リポジトリごとの同期処理で失敗しても次のリポジトリの同期処理を行う
       }
     }
+  }
+
+  // 同期ログテーブルから対象リポジトリの最新の同期ログ取得開始日時を取得
+  async getLastSuccessSyncedAt(
+    owner: string,
+    repo: string,
+  ): Promise<Date | null> {
+    const log = await this.prismaService.syncLog.findFirst({
+      where: {
+        source: 'github',
+        repository: `${owner}/${repo}`,
+        status: 'success',
+      },
+      orderBy: {
+        startedAt: 'desc',
+      },
+    });
+
+    return log ? log.startedAt : null;
   }
 }

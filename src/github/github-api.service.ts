@@ -6,8 +6,16 @@ const GITHUB_API_BASE_URL = 'https://api.github.com';
 @Injectable()
 export class GithubApiService {
   // GitHub API(List commits)を呼び出して、指定されたリポジトリのコミット情報を取得する
-  async fetchCommits(owner: string, repo: string): Promise<GithubCommit[]> {
-    const url = `${GITHUB_API_BASE_URL}/repos/${owner}/${repo}/commits`;
+  async fetchCommits(
+    owner: string,
+    repo: string,
+    since: Date | null,
+  ): Promise<GithubCommit[]> {
+    const params = new URLSearchParams();
+    if (since) {
+      params.set('since', since.toISOString());
+    }
+    const url = `${GITHUB_API_BASE_URL}/repos/${owner}/${repo}/commits?${params}`;
     const response = await fetch(url);
     if (!response.ok) {
       throw new Error(`Failed to fetch commits: ${response.statusText}`);
