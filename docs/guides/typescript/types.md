@@ -22,6 +22,37 @@ interface GithubCommit {
 TypeScriptがチェックしてくれる。外部APIから返ってくるJSONのような「決まった形を持つデータ」を
 扱う際の定番の使い方。
 
+## `interface`は実行時のフィルターではない(型消去)
+
+TypeScriptの型(`interface`など)は**コンパイル時にだけ存在し、実行時には消える**
+(型消去/Type Erasure)。
+
+```typescript
+// TypeScript
+interface GithubCommit {
+  sha: string;
+}
+function printSha(commit: GithubCommit) {
+  console.log(commit.sha);
+}
+```
+
+```javascript
+// コンパイル後のJavaScript(interfaceは跡形もなく消える)
+function printSha(commit) {
+  console.log(commit.sha);
+}
+```
+
+つまり、実際のレスポンスJSONに`sha`以外の大量のフィールドが含まれていても、**それらは削除されず
+そのままメモリ上に残る**。`interface`は「このコード上で扱ってよい範囲を絞り込む窓」であって、
+データそのものを加工・削減する仕組みではない。よって、レスポンスから型で指定した項目だけを
+ループで取り出す、といった処理は不要(型を付けるだけでよい)。
+
+補足: この性質上、実行時に本当に型通りのデータが来ているかはTypeScriptはチェックしてくれない。
+外部から来るデータを実行時にも検証したい場合は`zod`のようなライブラリを使う(本プロジェクトでは
+未導入)。
+
 ## `interface` と `type`(型エイリアス)の違い・使い分け
 
 どちらも「型に名前を付ける」機能で、**オブジェクトの形を定義するだけなら、ほぼ同じことができる**。

@@ -1,40 +1,7 @@
-# fetch APIについて(汎用知識)
+# fetch APIの仕組み・考え方(汎用知識)
 
-外部APIをNode標準の`fetch`で呼び出す際の知識をまとめる。本プロジェクトでは
-`GithubApiService`などから、GitHub/Qiitaの外部APIを呼び出す際に使う。
-
-## `interface`は実行時のフィルターではない(前提知識)
-
-`fetch`のレスポンスに型を付ける前に、前提として知っておくべきこと。
-
-TypeScriptの型(`interface`など)は**コンパイル時にだけ存在し、実行時には消える**
-(型消去/Type Erasure)。
-
-```typescript
-// TypeScript
-interface GithubCommit {
-  sha: string;
-}
-function printSha(commit: GithubCommit) {
-  console.log(commit.sha);
-}
-```
-
-```javascript
-// コンパイル後のJavaScript(interfaceは跡形もなく消える)
-function printSha(commit) {
-  console.log(commit.sha);
-}
-```
-
-つまり、実際のレスポンスJSONに`sha`や`html_url`以外の大量のフィールドが含まれていても、
-**それらは削除されずそのままメモリ上に残る**。`interface`は「このコード上で扱ってよい範囲を
-絞り込む窓」であって、データそのものを加工・削減する仕組みではない。よって、レスポンスから
-型で指定した項目だけをループで取り出す、といった処理は不要(型を付けるだけでよい)。
-
-補足: この性質上、実行時に本当に型通りのデータが来ているかはTypeScriptはチェックしてくれない。
-外部から来るデータを実行時にも検証したい場合は`zod`のようなライブラリを使う(本プロジェクトでは
-未導入)。
+`fetch`が内部的にどう動くか、`axios`とどう違うかをまとめる。実践的な使い方(HTTPメソッドの指定・
+クエリパラメータなど)は`docs/guides/typescript/fetch-usage.md`を参照。
 
 ## `fetch`は2段階のawaitが必要
 
