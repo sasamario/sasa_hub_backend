@@ -14,3 +14,11 @@ export interface GithubCommit {
     message: string;
   };
 }
+
+// List Pull Requests APIのレスポンスの型定義
+export interface GithubPullRequest {
+  number: number;
+  html_url: string;
+  title: string;
+  merged_at: string | null;
+}
