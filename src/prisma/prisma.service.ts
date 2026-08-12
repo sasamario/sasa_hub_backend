@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaPg } from '@prisma/adapter-pg';
-import { PrismaClient } from '../../generated/prisma/client';
+import { PrismaClient, Prisma } from '../../generated/prisma/client';
+
+export type TransactionClient = Prisma.TransactionClient;
 
 @Injectable()
 // PrismaClientを継承して、NestJSのDIコンテナで利用できるようにするためのサービスクラス
