@@ -28,4 +28,29 @@ export class GithubSyncService {
 
     return { count: result.count };
   }
+
+  // GitHubのプルリクエスト情報を取得してDBに保存する処理
+  async syncPullRequests(
+    owner: string,
+    repo: string,
+  ): Promise<{ count: number }> {
+    const pullRequests = await this.githubApiService.fetchPullRequests(
+      owner,
+      repo,
+    );
+    const data = pullRequests.map((pr) => ({
+      type: 'pull_request' as const,
+      externalId: pr.number.toString(),
+      repository: `${owner}/${repo}`,
+      title: pr.title,
+      url: pr.html_url,
+      activityDate: pr.merged_at,
+    }));
+    const result = await this.prismaService.githubActivity.createMany({
+      data,
+      skipDuplicates: true, // 重複をスキップするオプション
+    });
+
+    return { count: result.count };
+  }
 }
