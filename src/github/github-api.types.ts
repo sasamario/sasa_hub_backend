@@ -21,4 +21,5 @@ export interface GithubPullRequest {
   html_url: string;
   title: string;
   merged_at: string | null;
+  updated_at: string;
 }

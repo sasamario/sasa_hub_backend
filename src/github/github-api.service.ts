@@ -46,17 +46,43 @@ export class GithubApiService {
   async fetchPullRequests(
     owner: string,
     repo: string,
+    since: Date | null,
   ): Promise<GithubPullRequest[]> {
-    const url = `${GITHUB_API_BASE_URL}/repos/${owner}/${repo}/pulls`;
-    const params = new URLSearchParams({
-      state: 'all', // allは、 openとclosedの両方を取得するためのパラメータ
-    });
-    const response = await fetch(`${url}?${params}`);
-    if (!response.ok) {
-      throw new Error(`Failed to fetch pull requests: ${response.statusText}`);
-    }
-    const pullRequests: GithubPullRequest[] = await response.json();
+    let page = 1;
+    const perPage = 100;
+    const allPullRequests: GithubPullRequest[] = [];
 
-    return pullRequests;
+    while (true) {
+      const params = new URLSearchParams({
+        state: 'all', // allは、 openとclosedの両方を取得するためのパラメータ
+        sort: 'updated', // PRはsinceパラメータがないため更新日の降順で取得し、同期していないデータまでを同期する
+        direction: 'desc',
+        per_page: perPage.toString(),
+        page: page.toString(),
+      });
+      const url = `${GITHUB_API_BASE_URL}/repos/${owner}/${repo}/pulls?${params}`;
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(
+          `Failed to fetch pull requests: ${response.statusText}`,
+        );
+      }
+      const pullRequests: GithubPullRequest[] = await response.json();
+
+      for (const pr of pullRequests) {
+        // sinceが指定されていて、sinceより更新日が古いPRについてはすでに同期済みのためこの時点で返す
+        if (since && new Date(pr.updated_at) < since) {
+          return allPullRequests;
+        }
+        allPullRequests.push(pr);
+      }
+
+      if (pullRequests.length < perPage) {
+        break;
+      }
+      page++;
+    }
+
+    return allPullRequests;
   }
 }
