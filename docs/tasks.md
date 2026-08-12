@@ -31,11 +31,11 @@ architecture.md 4章の確定分をPrismaスキーマに落とし込む。
 architecture.md 7章の確定分に沿って実装する。
 
 - [ ] GitHub同期: 対象リポジトリごとの差分取得(sync_logsのstarted_atを起点)
-- [ ] GitHub同期: リポジトリ単位のトランザクション・一意キーでの重複防止
+- [x] GitHub同期: リポジトリ単位のトランザクション・一意キーでの重複防止
 - [ ] GitHub同期: ページング対応(現状`fetchCommits`/`fetchPullRequests`とも1ページ目のみ取得している制約の解消)
 - [ ] Qiita同期: 全記事取得 + upsert(likes/stocks/page_views更新)
 - [ ] Qiita同期: 記事ごとのPV個別取得・レート制限時の打ち切り処理
-- [ ] 共通: 一部失敗時も残りを継続する方針の実装・sync_logsへのstatus記録
+- [x] 共通: 一部失敗時も残りを継続する方針の実装・sync_logsへのstatus記録
 - [ ] 外部API連携を追加する手順を `docs/guides/add-external-api.md` に記録する
 
 ## フェーズ4: REST API実装
