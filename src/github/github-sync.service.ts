@@ -84,32 +84,64 @@ export class GithubSyncService {
     owner: string,
     repo: string,
   ): Promise<{ commitsCount: number; pullRequestsCount: number }> {
-    const commits = await this.githubApiService.fetchCommits(owner, repo);
-    const pullRequests = await this.githubApiService.fetchPullRequests(
-      owner,
-      repo,
-    );
-
-    // リポジトリ単位でトランザクションを張って、同期処理を行う
-    return this.prismaService.$transaction(async (tx) => {
-      const saveCommitsResult = await this.saveCommits(
-        commits,
+    const startDate = new Date();
+    try {
+      const commits = await this.githubApiService.fetchCommits(owner, repo);
+      const pullRequests = await this.githubApiService.fetchPullRequests(
         owner,
         repo,
-        tx,
-      );
-      const savePullRequestsResult = await this.savePullRequests(
-        pullRequests,
-        owner,
-        repo,
-        tx,
       );
 
-      return {
-        commitsCount: saveCommitsResult.count,
-        pullRequestsCount: savePullRequestsResult.count,
-      };
-    });
+      // リポジトリ単位でトランザクションを張って、同期処理を行う
+      const syncResult = await this.prismaService.$transaction(async (tx) => {
+        const saveCommitsResult = await this.saveCommits(
+          commits,
+          owner,
+          repo,
+          tx,
+        );
+        const savePullRequestsResult = await this.savePullRequests(
+          pullRequests,
+          owner,
+          repo,
+          tx,
+        );
+
+        return {
+          commitsCount: saveCommitsResult.count,
+          pullRequestsCount: savePullRequestsResult.count,
+        };
+      });
+
+      // 同期成功ログ登録
+      await this.prismaService.syncLog.create({
+        data: {
+          source: 'github' as const,
+          repository: `${owner}/${repo}`,
+          status: 'success' as const,
+          startedAt: startDate,
+          finishedAt: new Date(),
+        },
+      });
+
+      return syncResult;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+
+      // 同期失敗ログ登録
+      await this.prismaService.syncLog.create({
+        data: {
+          source: 'github' as const,
+          repository: `${owner}/${repo}`,
+          status: 'failed' as const,
+          startedAt: startDate,
+          finishedAt: new Date(),
+          message: message,
+        },
+      });
+
+      throw error;
+    }
   }
 
   async syncAllRepositories(): Promise<void> {
