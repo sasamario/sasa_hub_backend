@@ -12,5 +12,5 @@ export interface GithubCommit {
       date: string;
     };
     message: string;
-  }
+  };
 }

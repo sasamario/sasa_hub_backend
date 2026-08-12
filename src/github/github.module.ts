@@ -4,6 +4,6 @@ import { GithubSyncService } from './github-sync.service';
 
 @Module({
   providers: [GithubApiService, GithubSyncService],
-  exports: [GithubApiService, GithubSyncService]
+  exports: [GithubApiService, GithubSyncService],
 })
 export class GithubModule {}
