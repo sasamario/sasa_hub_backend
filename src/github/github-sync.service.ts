@@ -45,20 +45,30 @@ export class GithubSyncService {
     repo: string,
     tx: TransactionClient,
   ): Promise<{ count: number }> {
-    const data = pullRequests.map((pr) => ({
-      type: 'pull_request' as const,
-      externalId: pr.number.toString(),
-      repository: `${owner}/${repo}`,
-      title: pr.title,
-      url: pr.html_url,
-      activityDate: pr.merged_at,
-    }));
-    const result = await tx.githubActivity.createMany({
-      data,
-      skipDuplicates: true, // 重複をスキップするオプション
-    });
+    for (const pr of pullRequests) {
+      const data = {
+        type: 'pull_request' as const,
+        externalId: pr.number.toString(),
+        repository: `${owner}/${repo}`,
+        title: pr.title,
+        url: pr.html_url,
+        activityDate: pr.merged_at,
+      };
 
-    return { count: result.count };
+      await tx.githubActivity.upsert({
+        where: {
+          type_repository_externalId: {
+            type: data.type,
+            repository: data.repository,
+            externalId: data.externalId,
+          },
+        },
+        create: data,
+        update: data,
+      });
+    }
+
+    return { count: pullRequests.length };
   }
 
   // 環境変数から監視対象のリポジトリ情報を取得する処理
@@ -98,6 +108,7 @@ export class GithubSyncService {
       const pullRequests = await this.githubApiService.fetchPullRequests(
         owner,
         repo,
+        lastSuccessSyncedAt,
       );
 
       // リポジトリ単位でトランザクションを張って、同期処理を行う
