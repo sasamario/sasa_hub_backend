@@ -140,6 +140,7 @@ export class GithubSyncService {
           status: 'success' as const,
           startedAt: startDate,
           finishedAt: new Date(),
+          message: `コミット同期(追加)件数: ${syncResult.commitsCount}件, PR同期(追加,更新)件数: ${syncResult.pullRequestsCount}件`,
         },
       });
 
