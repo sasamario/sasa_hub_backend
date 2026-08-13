@@ -6,6 +6,7 @@
 generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
+  moduleFormat = "cjs"
 }
 
 datasource db {
@@ -57,7 +58,7 @@ model QiitaArticle {
   likesCount     Int      @map("likes_count")
   // 記事のストック数
   stocksCount    Int      @map("stocks_count")
-  // 記事の閲覧数
+  // 記事の閲覧数。Qiita API側の仕様でnullが返る場合があるためNULL許容にしている
   pageViewsCount Int?     @map("page_views_count")
   // 同期日時
   syncedAt       DateTime @default(now()) @map("synced_at")

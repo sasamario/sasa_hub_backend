@@ -113,6 +113,52 @@ Prismaスキーマは「TypeScriptから使うためのモデル定義」であ�
 毎回ダブルクォートで囲む必要が出て扱いにくい(`"externalId"`のように)。スネークケースなら
 クォート無しでも意図通りに動くため、SQLとの相性がよい。
 
+## 複合ユニークキーを`where`で指定する方法
+
+`@@unique([フィールド1, フィールド2, ...])`のような複合ユニークキーを`findUnique` / `upsert` /
+`update` / `delete`の`where`で使う場合、各フィールドをフラットに並べて書くことはできない。
+**Prismaが自動生成する、専用のプロパティ名にまとめて渡す必要がある。**
+
+本プロジェクトの`GithubActivity`モデルを例にする(`@@unique([type, repository, externalId])`)。
+
+```typescript
+await prisma.githubActivity.upsert({
+  where: {
+    // "type_repository_externalId" は実在のカラムではなく、Prismaが自動生成した名前
+    type_repository_externalId: {
+      type: 'pull_request',
+      repository: 'sasamario/sasa_tools',
+      externalId: '1',
+    },
+  },
+  create: {
+    type: 'pull_request',
+    repository: 'sasamario/sasa_tools',
+    externalId: '1',
+    title: '...',
+    url: '...',
+    activityDate: null,
+  },
+  update: {
+    title: '...',
+    url: '...',
+    activityDate: null,
+  },
+});
+```
+
+- **`type_repository_externalId`という名前は、`@@unique`に指定したフィールド名をアンダースコアで
+  繋いだもの**(デフォルトの命名規則)。実際のDBにこの名前のカラムは存在しない、
+  Prisma Client(TypeScript側)だけの特別なプロパティ名
+- なぜフラットに書けないか: `findUnique`/`upsert`などの`where`は「これは間違いなく1件だけを
+  特定できる条件である」ことを型で保証したい設計になっている。複数フィールドの組み合わせを
+  バラバラに渡すと、それが本当に一意性を保証する組み合わせなのか型だけでは判断できないため、
+  専用のプロパティにまとめて渡す形が要求される
+  (`findFirst`/`findMany`の`where`は用途が異なり、一意性を保証する必要が無いため、
+  フラットに複数条件を書ける)
+- **名前をカスタマイズすることもできる**: `@@unique([...], name: "任意の名前")`のように
+  スキーマ側で明示的に名前を付ければ、そのカスタム名で`where`に使える
+
 ## 整形(手動で位置を揃えなくてよい)
 
 型・属性の位置揃えは手動で行わず、`prisma format` コマンド(`docs/guides/prisma/cli.md`参照)に
