@@ -13,7 +13,7 @@ NestJS プロジェクトの作成・雛形生成を行う公式CLIツールの�
 
 新規プロジェクトの雛形一式(TypeScript設定・ESLint/Prettier・テスト環境込み)を生成する。
 
-```
+```bash
 nest new <プロジェクト名>
 ```
 
@@ -35,21 +35,62 @@ nest new <プロジェクト名>
 
 モジュール・コントローラー・サービスなどの雛形を追加生成する。
 
-```
+```bash
 nest g module users     # モジュールを生成
 nest g controller users # コントローラーを生成
 nest g service users    # サービスを生成
+nest g interface users  # interfaceを生成
 nest g resource users   # モジュール+コントローラー+サービス+DTOをまとめて生成(CRUD雛形)
 ```
 
 `resource` は生成時にトランスポート層(REST API / GraphQL / Microservice / WebSocket)を
 対話式で選択できる。REST API中心の本プロジェクトでは基本的に REST を選ぶ想定。
 
+#### `nest g interface` と、手動で作る `*.types.ts` の使い分け
+
+`nest g interface`は、**1つのファイルに1つの特定のinterfaceだけを定義する**ことを前提にした
+コマンドで、`*.interface.ts`という名前でファイルが作られる。
+
+```bash
+nest g interface github/github-commit --flat
+# → src/github/github-commit.interface.ts (interface GithubCommit) が作られる
+```
+
+一方、**外部APIのレスポンス型のように、関連する複数の型をまとめて1ファイルに集約したい場合**は、
+`nest g interface`を使わず、`*.types.ts`という名前のファイルを手動で作るのが実態に合っている。
+`*.interface.ts`という命名は「1対1(1ファイル1interface)」を前提にした慣習であり、
+複数の型をまとめる場所には`types`(複数形)という名前の方が実態を表せる。
+
+| 状況 | 命名・作り方 |
+| ------ | -------------- |
+| 単一の、はっきりした役割を持つinterface(例: サービス間の契約) | `nest g interface` → `*.interface.ts` |
+| 関連する複数の型をまとめて置く場所(例: 外部APIのレスポンス型一式) | 手動作成 → `*.types.ts` |
+
+#### 名前にパスを含める・`--flat`オプション
+
+`nest g`の名前部分にはパスを含められる。**デフォルトでは、名前の最後の部分と同じ名前の
+サブフォルダが新規に作られ、その中にファイルが置かれる。**
+
+```bash
+nest g service github/api
+# → src/github/api/api.service.ts (ApiService) が作られる(apiという新しいフォルダができる)
+```
+
+`--flat`を付けると、このサブフォルダ作成を省略し、指定したパスの直下にそのままファイルを置く。
+
+```bash
+nest g service github/github-api --flat
+# → src/github/github-api.service.ts (GithubApiService) が作られる(新しいフォルダは作られない)
+```
+
+既存のフォルダ(例: 既に`github.module.ts`がある`src/github/`)に、同階層のファイルとして
+追加したい場合は`--flat`を付けるとよい。
+
 参考: [CLI command reference - nest generate](https://docs.nestjs.com/cli/usages#nest-generate)
 
 ### `nest build` / `nest start`
 
-```
+```bash
 nest build          # TypeScriptをコンパイルし dist/ に出力
 nest start          # アプリを起動(コンパイル済みを実行)
 nest start --watch  # ファイル変更を検知して自動再起動(開発時に使用)
@@ -57,7 +98,7 @@ nest start --watch  # ファイル変更を検知して自動再起動(開発時
 
 ## `nest new` で生成される標準ファイル構成
 
-```
+```text
 src/
   app.controller.ts       # サンプルのコントローラー(GET / を処理)
   app.controller.spec.ts  # コントローラーのユニットテスト
