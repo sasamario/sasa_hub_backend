@@ -33,10 +33,12 @@ architecture.md 7章の確定分に沿って実装する。
 - [x] GitHub同期: 対象リポジトリごとの差分取得(sync_logsのstarted_atを起点)
 - [x] GitHub同期: リポジトリ単位のトランザクション・一意キーでの重複防止
 - [x] GitHub同期: ページング対応(現状`fetchCommits`/`fetchPullRequests`とも1ページ目のみ取得している制約の解消)
-- [ ] Qiita同期: 全記事取得 + upsert(likes/stocks/page_views更新)
-- [ ] Qiita同期: 記事ごとのPV個別取得・レート制限時の打ち切り処理
+- [x] Qiita同期: 全記事取得 + upsert(likes/stocks/page_views更新)
+- ~~[ ] Qiita同期: 記事ごとのPV個別取得・レート制限時の打ち切り処理~~
+  → 不要と判明(2026-08-13)。`GET /api/v2/authenticated_user/items`のレスポンスに
+  `page_views_count`が最初から含まれることを確認済み。architecture.mdへの反映はオーナー経由。
 - [x] 共通: 一部失敗時も残りを継続する方針の実装・sync_logsへのstatus記録
-- [ ] 外部API連携を追加する手順を `docs/guides/add-external-api.md` に記録する
+- [x] 外部API連携を追加する手順を `docs/guides/add-external-api.md` に記録する
 
 ## フェーズ4: REST API実装
 
