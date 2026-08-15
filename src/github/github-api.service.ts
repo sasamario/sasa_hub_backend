@@ -10,6 +10,7 @@ export class GithubApiService {
     owner: string,
     repo: string,
     since: Date | null,
+    mode: string,
   ): Promise<GithubCommit[]> {
     let page = 1;
     const perPage = 100;
@@ -20,7 +21,7 @@ export class GithubApiService {
         per_page: perPage.toString(),
         page: page.toString(),
       });
-      if (since) {
+      if (since && mode === 'diff') {
         params.set('since', since.toISOString());
       }
       const url = `${GITHUB_API_BASE_URL}/repos/${owner}/${repo}/commits?${params}`;
@@ -47,6 +48,7 @@ export class GithubApiService {
     owner: string,
     repo: string,
     since: Date | null,
+    mode: string,
   ): Promise<GithubPullRequest[]> {
     let page = 1;
     const perPage = 100;
@@ -71,7 +73,7 @@ export class GithubApiService {
 
       for (const pr of pullRequests) {
         // sinceが指定されていて、sinceより更新日が古いPRについてはすでに同期済みのためこの時点で返す
-        if (since && new Date(pr.updated_at) < since) {
+        if (since && mode === 'diff' && new Date(pr.updated_at) < since) {
           return allPullRequests;
         }
         allPullRequests.push(pr);

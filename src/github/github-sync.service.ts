@@ -93,6 +93,7 @@ export class GithubSyncService {
   async syncRepository(
     owner: string,
     repo: string,
+    mode: string,
   ): Promise<{ commitsCount: number; pullRequestsCount: number }> {
     const startDate = new Date();
     try {
@@ -104,11 +105,13 @@ export class GithubSyncService {
         owner,
         repo,
         lastSuccessSyncedAt,
+        mode,
       );
       const pullRequests = await this.githubApiService.fetchPullRequests(
         owner,
         repo,
         lastSuccessSyncedAt,
+        mode,
       );
 
       // リポジトリ単位でトランザクションを張って、同期処理を行う
@@ -140,7 +143,7 @@ export class GithubSyncService {
           status: 'success' as const,
           startedAt: startDate,
           finishedAt: new Date(),
-          message: `コミット同期(追加)件数: ${syncResult.commitsCount}件, PR同期(追加,更新)件数: ${syncResult.pullRequestsCount}件`,
+          message: `モード: ${mode}, コミット同期(追加)件数: ${syncResult.commitsCount}件, PR同期(追加,更新)件数: ${syncResult.pullRequestsCount}件`,
         },
       });
 
@@ -165,12 +168,12 @@ export class GithubSyncService {
   }
 
   // 対象リポジトリ全てを同期する処理
-  async syncAllRepositories(): Promise<void> {
+  async syncAllRepositories(mode: string): Promise<void> {
     const repositories = this.parseTrackedRepositories();
 
     for (const { owner, repo } of repositories) {
       try {
-        await this.syncRepository(owner, repo);
+        await this.syncRepository(owner, repo, mode);
       } catch (error) {
         // リポジトリごとの同期処理で失敗しても次のリポジトリの同期処理を行う
       }
