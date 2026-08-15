@@ -6,8 +6,8 @@ import { QiitaApiService } from './qiita-api.service';
 @Injectable()
 export class QiitaSyncService {
   constructor(
-    private qiitaApiService: QiitaApiService,
-    private prismaService: PrismaService,
+    private readonly qiitaApiService: QiitaApiService,
+    private readonly prismaService: PrismaService,
   ) {}
 
   // 記事情報保存処理

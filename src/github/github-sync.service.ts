@@ -10,8 +10,8 @@ import {
 @Injectable()
 export class GithubSyncService {
   constructor(
-    private githubApiService: GithubApiService,
-    private prismaService: PrismaService,
+    private readonly githubApiService: GithubApiService,
+    private readonly prismaService: PrismaService,
   ) {}
 
   // GitHubのコミット情報をDBに保存する処理
