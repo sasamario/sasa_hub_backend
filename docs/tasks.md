@@ -44,8 +44,14 @@ architecture.md 7章の確定分に沿って実装する。
 
 architecture.md 6章のエンドポイント一覧を実装する。
 
-- [ ] **APIレスポンス形式の確定**(フロントとすり合わせ、architecture.md 8章に確定情報を追記)
-- [ ] `GET /api/github/summary`(コミット総数・PR総数)
+- [x] **APIレスポンス形式の確定**(フロントとすり合わせ、architecture.md 8章に確定情報を追記)
+      → 2026-08-15決定。配列を返すエンドポイント(timeseries/by-repository/activities)は
+      `{ "data": [...] }`で統一(activitiesの`items`は`data`に変更)。summary系は単一オブジェクトを
+      そのまま返す。日時はDateのデフォルトJSON化(ISO8601・UTC)のままとし、JST変換はフロント側の
+      責務とする。同期APIは件数を返す(`/api/sync/github`→`{commitsCount, pullRequestsCount}`、
+      `/api/sync/qiita`→`{count}`、`/api/sync`→`{github: {...}, qiita: {...}}`)。
+      architecture.mdへの反映はオーナー経由で別途行う。
+- [x] `GET /api/github/summary`(コミット総数・PR総数)
 - [ ] `GET /api/github/commits/timeseries`(from/to/unit/repository)
 - [ ] `GET /api/github/commits/by-repository`(0件リポジトリも含めて返す)
 - [ ] `GET /api/github/activities`(カーソル方式ページング・repository/typeフィルタ)
