@@ -52,7 +52,7 @@ architecture.md 6章のエンドポイント一覧を実装する。
       `/api/sync/qiita`→`{count}`、`/api/sync`→`{github: {...}, qiita: {...}}`)。
       architecture.mdへの反映はオーナー経由で別途行う。
 - [x] `GET /api/github/summary`(コミット総数・PR総数)
-- [ ] `GET /api/github/commits/timeseries`(from/to/unit/repository)
+- [x] `GET /api/github/commits/timeseries`(from/to/unit/repository)
 - [ ] `GET /api/github/commits/by-repository`(0件リポジトリも含めて返す)
 - [ ] `GET /api/github/activities`(カーソル方式ページング・repository/typeフィルタ)
 - [ ] `GET /api/qiita/summary`(from/toは任意パラメータ、常時全期間呼び出しにも対応)

@@ -4,7 +4,9 @@
 行う際に使う、Prismaの生SQL実行機能についてまとめる。
 `GET /api/github/commits/timeseries`実装時の議論より。
 
-参考: [Prisma公式ドキュメント - Raw queries](https://www.prisma.io/docs/orm/prisma-client/queries/raw-database-access/raw-queries)
+参考: [Prisma公式ドキュメント - Raw queries](https://www.prisma.io/docs/orm/prisma-client/using-raw-sql/raw-queries) /
+[$queryRawUnsafe()](https://www.prisma.io/docs/orm/prisma-client/using-raw-sql/raw-queries#queryrawunsafe) /
+[Tagged template helpers(`Prisma.sql`/`Prisma.join`/`Prisma.empty`)](https://www.prisma.io/docs/orm/prisma-client/using-raw-sql/raw-queries#tagged-template-helpers)
 
 ## `$queryRaw`と`$queryRawUnsafe`の違い
 
@@ -79,15 +81,24 @@ return rows.map((row) => ({
 
 ## `Prisma.sql`で条件付きのSQL片を組み立てる
 
-`repository`や`from`/`to`のように、指定されている場合だけ`WHERE`条件を追加したい場合は、
-`Prisma.sql`ヘルパーでSQL片を組み立ててから結合する。
+`repository`や`from`/`to`のように、**指定されている場合だけ`WHERE`条件を追加したい**場合は、
+`Prisma.sql`ヘルパーでSQL片を組み立ててから`Prisma.join`で結合する。
 
 ```typescript
-import { Prisma } from '../../generated/prisma/client';
+// Prismaは generated/prisma 配下から直接importせず、PrismaService経由で再エクスポートしたものを使う
+// (docs/guides/prisma/transactions.md「PrismaService側での型の再エクスポート」と同じ方針)
+import { Prisma } from '../prisma/prisma.service';
 
 const conditions: Prisma.Sql[] = [Prisma.sql`type = 'commit'`];
+
 if (repository) {
   conditions.push(Prisma.sql`repository = ${repository}`);
+}
+if (from) {
+  conditions.push(Prisma.sql`activity_date >= ${from}`);
+}
+if (to) {
+  conditions.push(Prisma.sql`activity_date < ${to}`);
 }
 
 const where = Prisma.join(conditions, ' AND ');
@@ -97,5 +108,18 @@ await prisma.$queryRaw`
 `;
 ```
 
-`Prisma.sql`で作った断片も、通常の`$queryRaw`のテンプレートリテラルと同様に安全に
-値が埋め込まれる。文字列連結でSQL片を組み立てるのは避け、必ず`Prisma.sql`/`Prisma.join`を使う。
+- `Prisma.sql`: 値を安全に埋め込んだSQL片(`Prisma.Sql`型)を1つ作る。`repository`/`from`/`to`が
+  指定されているときだけ配列に`push`することで、「指定が無ければ条件を追加しない」を表現する
+- `Prisma.join(配列, 区切り文字)`: 複数の`Prisma.Sql`断片を、指定した区切り文字
+  (`' AND '`など)でつなげて1つの`Prisma.Sql`にまとめる
+
+### 通常の値の埋め込みとの違い
+
+`$queryRaw`のテンプレートリテラルに`${value}`のように**普通の値**(文字列・数値・`Date`など)を
+埋め込むと、その値は安全な**プレースホルダ(バインド変数)として**扱われる。
+
+一方、`${where}`のように**`Prisma.Sql`型の値**を埋め込むと、Prismaはこれを「1つの値」としてでは
+なく、**すでに組み立て済みのSQL文の断片としてそのまま展開**する。これにより、`WHERE`のような
+SQL構文そのもの(値ではない部分)を、安全性を保ったまま動的に組み立てられる。
+
+文字列連結でSQL片を組み立てるのは避け、必ず`Prisma.sql`/`Prisma.join`を使う。
