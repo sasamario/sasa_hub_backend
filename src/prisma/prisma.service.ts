@@ -4,6 +4,8 @@ import { PrismaClient, Prisma } from '../../generated/prisma/client';
 
 export type TransactionClient = Prisma.TransactionClient;
 
+export { Prisma } from '../../generated/prisma/client';
+
 @Injectable()
 // PrismaClientを継承して、NestJSのDIコンテナで利用できるようにするためのサービスクラス
 export class PrismaService extends PrismaClient {
